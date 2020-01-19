@@ -1,0 +1,377 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Description: |
+  Mule Auto Scaling support on AWS in Hybrid environment
+  SAM Template for Mule Auto Sacling
+Globals:
+  Function:
+    Timeout: 30
+Parameters:
+  MuleCodeS3BucketArn:
+    Type: String
+    Description: S3 bucket name where mule code is stored
+    MinLength: '1'
+    MaxLength: '450'
+  SecretArn:
+    Type: String
+    Description: S3 bucket name where mule code is stored
+    MinLength: '1'
+    MaxLength: '450'
+Resources:
+  MuleDepLambdaLayer:
+    Type: 'AWS::Serverless::LayerVersion'
+    Properties:
+      CompatibleRuntimes:
+        - python3.7
+        - python3.8
+      ContentUri: layer/
+      Description: Python dependencises and mule shared functions
+      LayerName: MuleAsgSharedDependenciesLayer
+      LicenseInfo: MIT
+      RetentionPolicy: Retain
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 6bb30670-b7cf-4062-a5db-634c29a6d271
+  MuleLambdaFunctionExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: ce6ca85d-9ae8-41f9-8c12-bfa11d7c3d6b
+  MuleDeployLambdaFunctionExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: aa412bd2-21a7-479a-9c1a-8099d086ed2b
+  MuleLambdaFunctionSecretsmanagerAccessPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: MuleLambdaFunctionSecretsmanagerAccessPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'secretsmanager:GetSecretValue'
+              - 'secretsmanager:ListSecretVersionIds'
+            Resource:
+              - !Ref SecretArn
+              - !Sub >-
+                arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:sam_muleGetAccessToken
+      Roles:
+        - !Ref MuleLambdaFunctionExecutionRole
+        - !Ref MuleDeployLambdaFunctionExecutionRole
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 18fb0f8d-cb06-4deb-885c-5b3fba309a16
+  MuleLambdaFunctionLogAccessPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: MuleLambdaFunctionLogAccessPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+              - 'logs:DescribeLogStreams'
+            Resource:
+              - !Sub >-
+                arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:sam_muleGetAccessToken
+              - !Sub >-
+                arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:sam_muleServerGroupAction
+              - !Sub >-
+                arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:sam_muleDeployApps
+              - !Sub >-
+                arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:sam_MuleRemoveServer
+      Roles:
+        - !Ref MuleLambdaFunctionExecutionRole
+        - !Ref MuleDeployLambdaFunctionExecutionRole
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: f6b9131a-adb4-45b8-9247-3a24a961bb6e
+    DependsOn:
+      - MuleLambdaFunctionExecutionRole
+  MuleLambdaFunctionS3BucketAccessPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: MuleLambdaFunctionS3BucketAccessPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - 's3:Get*'
+              - 's3:List*'
+            Resource: !Ref MuleCodeS3BucketArn
+      Roles:
+        - !Ref MuleDeployLambdaFunctionExecutionRole
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 0f3f83da-c774-42f5-ac70-42a8c5e7b058
+    DependsOn:
+      - MuleDeployLambdaFunctionExecutionRole
+  muleAddToServerGroup:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: sam_muleServerGroupAction
+      CodeUri: muleAddToServerGroup/muleAddToServerGroup/
+      Handler: app.lambda_serverGroupAction
+      Layers:
+        - !Ref MuleDepLambdaLayer
+      Runtime: python3.7
+      MemorySize: 512
+      Role: !GetAtt 
+        - MuleLambdaFunctionExecutionRole
+        - Arn
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 22d5785a-2143-425e-be9f-5706891f3306
+    DependsOn:
+      - MuleLambdaFunctionExecutionRole
+  MuleDeployApps:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: sam_muleDeployApps
+      CodeUri: muleDeployApps/muleDeployApps/
+      Handler: app.lambda_deployMuleAps
+      Layers:
+        - !Ref MuleDepLambdaLayer
+      Runtime: python3.7
+      MemorySize: 512
+      Role: !GetAtt 
+        - MuleDeployLambdaFunctionExecutionRole
+        - Arn
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 26957bf4-1332-4d63-879f-597f381f9732
+    DependsOn:
+      - MuleDeployLambdaFunctionExecutionRole
+  MuleGetAccessToken:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: sam_muleGetAccessToken
+      CodeUri: muleGetAccessToken/muleGetAccessToken/
+      Handler: app.lambda_handler
+      Layers:
+        - !Ref MuleDepLambdaLayer
+      Runtime: python3.7
+      MemorySize: 512
+      Role: !GetAtt 
+        - MuleLambdaFunctionExecutionRole
+        - Arn
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 2766b119-4cfa-4d7e-84c8-66b90e94ace4
+    DependsOn:
+      - MuleLambdaFunctionExecutionRole
+  MuleRemoveServer:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: sam_MuleRemoveServer
+      CodeUri: muleRemoverServer/muleRemoveServer/
+      Handler: app.lambda_handler
+      Layers:
+        - !Ref MuleDepLambdaLayer
+      Runtime: python3.7
+      MemorySize: 512
+      Role: !GetAtt 
+        - MuleLambdaFunctionExecutionRole
+        - Arn
+    DependsOn:
+      - MuleLambdaFunctionExecutionRole
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 689c53a7-884e-4c50-8426-9cf46bfc2d07
+  EventRule:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Description: EventRule
+      EventPattern:
+        source:
+          - aws.autoscaling
+        detail-type:
+          - EC2 Instance Terminate Successful
+          - EC2 Instance Terminate Unsuccessful
+        detail:
+          AutoScalingGroupName:
+            - MuleRuntimeASG
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt 
+            - MuleRemoveServer
+            - Arn
+          Id: MuleRemoveServerlambdaFunctionV1
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 32b60a29-afc8-4f05-99d5-dc26de4e532e
+  PermissionForEventsToInvokeLambda:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Ref MuleRemoveServer
+      Action: 'lambda:InvokeFunction'
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt 
+        - EventRule
+        - Arn
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 91223f6a-82ff-423d-b359-ae886c61e139
+Outputs:
+  MuleDeployApps:
+    Description: Deploy mule application from s3 bucket to server group
+    Value: !GetAtt 
+      - muleAddToServerGroup
+      - Arn
+  muleGetAccessToken:
+    Description: mule Get Access Token Function ARN
+    Value: !GetAtt 
+      - MuleGetAccessToken
+      - Arn
+  muleAddToServerGroup:
+    Description: Add/Remove Mule runtime instance to Mule Server Group Lambda Function ARN
+    Value: !GetAtt 
+      - muleAddToServerGroup
+      - Arn
+Metadata:
+  'AWS::CloudFormation::Designer':
+    aa412bd2-21a7-479a-9c1a-8099d086ed2b:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 60
+        'y': 90
+      z: 1
+      embeds: []
+    26957bf4-1332-4d63-879f-597f381f9732:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 180
+        'y': 90
+      z: 1
+      embeds: []
+    0f3f83da-c774-42f5-ac70-42a8c5e7b058:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 60
+        'y': 210
+      z: 1
+      embeds: []
+      dependson:
+        - aa412bd2-21a7-479a-9c1a-8099d086ed2b
+    ce6ca85d-9ae8-41f9-8c12-bfa11d7c3d6b:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 180
+        'y': 210
+      z: 1
+      embeds: []
+    2766b119-4cfa-4d7e-84c8-66b90e94ace4:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 300
+        'y': 90
+      z: 1
+      embeds: []
+    22d5785a-2143-425e-be9f-5706891f3306:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 300
+        'y': 210
+      z: 1
+      embeds: []
+    f6b9131a-adb4-45b8-9247-3a24a961bb6e:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 60
+        'y': 330
+      z: 1
+      embeds: []
+      isassociatedwith:
+        - aa412bd2-21a7-479a-9c1a-8099d086ed2b
+      dependson:
+        - ce6ca85d-9ae8-41f9-8c12-bfa11d7c3d6b
+    6bb30670-b7cf-4062-a5db-634c29a6d271:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 210
+        'y': 330
+      z: 1
+      embeds: []
+    689c53a7-884e-4c50-8426-9cf46bfc2d07:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 60
+        'y': 420
+      z: 1
+      embeds: []
+    32b60a29-afc8-4f05-99d5-dc26de4e532e:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 150
+        'y': 420
+      z: 1
+      embeds: []
+    91223f6a-82ff-423d-b359-ae886c61e139:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 240
+        'y': 420
+      z: 1
+      embeds: []
+    18fb0f8d-cb06-4deb-885c-5b3fba309a16:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 300
+        'y': 300
+      z: 1
+      embeds: []
+      isassociatedwith:
+        - ce6ca85d-9ae8-41f9-8c12-bfa11d7c3d6b
+        - aa412bd2-21a7-479a-9c1a-8099d086ed2b
+
