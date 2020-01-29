@@ -26,7 +26,7 @@ Resources:
       CompatibleRuntimes:
       - python3.7
       - python3.8
-      ContentUri: s3://mulesambuild/096fbc30e20f6ca9fd24156cb99e013b
+      ContentUri: s3://mulesambuild/d1ab26bcb5ab82e17805982e3d52ee01
       Description: Python dependencises and mule shared functions
       LayerName: MuleAsgSharedDependenciesLayer
       LicenseInfo: MIT
@@ -174,7 +174,7 @@ Resources:
     Properties:
       FunctionName: sam_muleGetAccessToken
       CodeUri: s3://mulesambuild/f7d9ae3abedfd4be98f93236bbd3ca6c
-      Handler: app.lambda_handler
+      Handler: app.lambda_getAccessTokenFromConnecedApp
       Layers:
       - Ref: MuleDepLambdaLayer
       Runtime: python3.7
