@@ -14,7 +14,7 @@ Parameters:
     MaxLength: '450'
   SecretArn:
     Type: String
-    Description: S3 bucket name where mule code is stored
+    Description: Secrets manager secret ARN
     MinLength: '1'
     MaxLength: '450'
 Resources:
