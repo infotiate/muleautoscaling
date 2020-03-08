@@ -1,5 +1,5 @@
 # muleautoscaling
-Auto Scale Mule Runtimes on AWS
+Infotiate Mule Auto Scaling is a serverless solution that enables auto scaling support for mule runtimes running on AWS in hybrid mode. With autscaling support you can now run mule runtimes as part of an auto scaling group and scale up or down your workloads based on scaling policies. This also gives tremendous flexibility to make use of cloud native features such as dynamic scaling, use of spot instances to run mule workloads 
 
 # Installation
 
@@ -19,7 +19,7 @@ Please read [Mulesoft documentation on how to create connected app in you Anypoi
 
 You'll need this client ID, Client Secret, Organization ID and Environment ID and  later when you create secret in AWS Secrets Manager so take a note of client id and secret
 
-## Create AWS Secret
+## Create Secret
 
 > AWS Secrets Manager helps you protect secrets needed to access your applications, services, and IT resources. The service enables you to easily rotate, manage, and retrieve database credentials, API keys, and other secrets throughout their lifecycle. Users and applications retrieve secrets with a call to Secrets Manager APIs, eliminating the need to hardcode sensitive information in plain text. Please refer to AWS [Secrets Manager documentation to](https://aws.amazon.com/secrets-manager/) learn how to create Secret in AWS Secrets Manager
 
