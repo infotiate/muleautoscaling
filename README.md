@@ -1,6 +1,8 @@
 # muleautoscaling
 Infotiate Mule Auto Scaling is a serverless solution that enables auto scaling support for mule runtimes running on AWS in hybrid mode. With autscaling support you can now run mule runtimes as part of an auto scaling group and scale up or down your workloads based on scaling policies. This also gives tremendous flexibility to make use of cloud native features such as dynamic scaling, use of spot instances to run mule workloads 
 
+**Solution overview** is available at our [Wiki](https://github.com/infotiate/muleautoscaling/wiki) page
+
 **Note: Documenation is not fully updated yet so pelase email us at info@infotiate.com in case you need help**
 
 # Installation
