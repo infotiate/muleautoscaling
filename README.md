@@ -23,7 +23,7 @@ You'll need this client ID, Client Secret, Organization ID and Environment ID an
 
 > AWS Secrets Manager helps you protect secrets needed to access your applications, services, and IT resources. The service enables you to easily rotate, manage, and retrieve database credentials, API keys, and other secrets throughout their lifecycle. Users and applications retrieve secrets with a call to Secrets Manager APIs, eliminating the need to hardcode sensitive information in plain text. Please refer to AWS [Secrets Manager documentation to](https://aws.amazon.com/secrets-manager/) learn how to create Secret in AWS Secrets Manager
 
-Create secret in AWS Secrets manager with following values
+Create secret in AWS Secrets manager and name the secret as **MuleAnypointUser** with following values
 - **muleDomainUrl** - (Required) for example anypoint.mulesoft.com 
 - **envId** - (Required) Environment ID
 - **orgId** - (Required) Organization ID
