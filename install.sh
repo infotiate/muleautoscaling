@@ -1,3 +1,6 @@
+#!/bin/bash 
+SAM_S3_BUCKET='UPDATE_S3_BUCKET_NAME'
+
 echo 'Updating the system...'
 sudo yum update -y
 echo 'Installing git'
@@ -17,5 +20,15 @@ brew tap aws/tap
 brew install aws-sam-cli
 
 sam --version
-
 echo 'Installation Successful'
+
+echo 'Cloning Infotiate muleautoscaling git repo'
+git clone https://github.com/infotiate/muleautoscaling.git
+cd muleautoscaling
+
+echo 'Building the code'
+sam build
+
+echo 'Packaging...'
+chmod +x ./package.sh
+./package.sh muleasg $SAM_S3_BUCKET
