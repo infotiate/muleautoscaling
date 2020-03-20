@@ -174,7 +174,7 @@ Resources:
     Properties:
       FunctionName: sam_muleGetAccessToken
       CodeUri: muleGetAccessToken/muleGetAccessToken/
-      Handler: app.lambda_getAccessTokenFromConnecedApp
+      Handler: app.lambda_handler
       Layers:
         - !Ref MuleDepLambdaLayer
       Runtime: python3.7
