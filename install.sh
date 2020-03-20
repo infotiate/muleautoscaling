@@ -1,5 +1,6 @@
 #!/bin/bash 
-SAM_S3_BUCKET='UPDATE_S3_BUCKET_NAME'
+echo 'Usage ./install.sh <<s3 bucket name>>'
+SAM_S3_BUCKET=$1
 
 echo 'Updating the system...'
 sudo yum update -y
