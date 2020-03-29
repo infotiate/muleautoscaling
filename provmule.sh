@@ -32,6 +32,6 @@ ORG_ID=$(cat response.json | python -c "import sys, json; print json.load(sys.st
 echo '{"accessToken":' '"'${ACCESS_TOK}'"' ',"serverGroupName": "MuleRuntimesDev","domain": "anypoint.mulesoft.com","serverName":' '"'${INSTANCE_ID}'"' ',"envId":' '"'${ENV_ID}'"' ',"orgId":''"'${ORG_ID}'"}' > payload.json
 cat payload.json
 
-SERVERGRP_RESPONSE=$(aws lambda invoke --region us-east-1 --function-name $LAMBDA_SRV_GROUP  --payload file://payload.json  response_svg.json)
+SERVERGRP_RESPONSE=$(aws lambda invoke --region $REGION --function-name $LAMBDA_SRV_GROUP  --payload file://payload.json  response_svg.json)
 
 cat response_svg.json
