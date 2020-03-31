@@ -79,6 +79,18 @@ Launch an Amazon Linux 2 instance with following software installed
  - Python 3.8 or 3.7
  - Open JDK 8, required to run mule runtime
  - Download and copy the mule runtime on to the instance. By default the [user data script](https://github.com/infotiate/muleautoscaling/blob/master/provmule.sh) assume in /home/ec2-user directory e.g. /home/ec2-user/mule-enterprise-standalone-4.2.2.zip. We recommend you modify the location of MULE_HOME and USER_HOME and the AWS region as per your configuration preferences
+ ```
+ You need to update following in user data script as per your configuration
+ 
+ 1) Change the region name in the following line of code default is **us-east-1**
+ REGISTRATION_RESPONSE=$(aws lambda invoke --region $REGION --function-name $LAMDA_ACCESS_TOK  --payload '{"region": "us-east-1"}'  response.json)
+ 
+ 2) Chnage the server group name, default is **MuleRuntimeDev**
+ echo '{"accessToken":' '"'${ACCESS_TOK}'"' ',"serverGroupName": "MuleRuntimesDev","domain": "anypoint.mulesoft.com","serverName":' '"'${INSTANCE_ID}'"' ',"envId":' '"'${ENV_ID}'"' ',"orgId":''"'${ORG_ID}'"}' > payload.json
+cat payload.json
+
+ 
+ ```
  - Create AMI
  - Create Instance profiel IAM role and provide access to 
    - **lambda:InvokeFunction** to the Lambda functions created by deploy.sh script
