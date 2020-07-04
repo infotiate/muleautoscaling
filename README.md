@@ -94,5 +94,5 @@ cat payload.json
  - Create AMI
  - Create Instance profiel IAM role and provide access to 
    - **lambda:InvokeFunction** to the Lambda functions created by deploy.sh script
- - Launch EC2 instance with above AMI and specify **provmule.sh** as user data script and the instanc eprofile created above as instance role. Please make sure to modify the script as per your configuration
+ - Launch EC2 instance with above AMI and specify **provmule.sh** as user data script and the instance profile created above as instance role. Please make sure to modify the script as per your configuration
  
